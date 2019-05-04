@@ -1,4 +1,7 @@
 #include <Arduino.h>
+#include "WiFi.h"
+#include <SPI.h>
+
 
 #include "chord1.h"
 #include "chord2.h"
