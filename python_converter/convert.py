@@ -13,8 +13,8 @@ def note_to_freq(note):
     return (a / 32) * (2 ** ((note - 9) / 12))
 
 def time_to_us(time):
-    ms = time * T_MOD * 1000
-    return ms
+    us = time * T_MOD * 1000
+    return us
 
 def get_notes(mid):
     for note in list(mid):
