@@ -21,7 +21,7 @@ def time_to_us(time):
 def get_notes(mid):
     ret = ""
     for note in list(mid):
-        if note.__class__ == mido.messages.messages.Message and note.type == (ON or OFF):
+        if note.__class__ == mido.messages.messages.Message and note.type in {ON, OFF}:
             freq = note_to_freq(note.note)
             time = time_to_us(note.time)
 
