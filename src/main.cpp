@@ -8,17 +8,9 @@
 #include "deedle2.h"
 #include "extra.h"
 
-int freq = 2000;
+#define freq 2000
 #define CHANNEL 0
-int resolution = 8;
-
-int pinoVermelho = 19; //pino que ligamos o LED vermelho
-int pinoVerde = 16; //pino que ligamos o LED verde
-
-int pinoTouchOn = 4; //pino com sensor touch (pode-se usar a constante nativa T0)
-int pinoTouchBlink = 6; //pino com sensor touch (pode-se usar a constante nativa T4)
-int capacitanciaMaxima = 20; //valor que nos da a certeza de toque (ache esse valor através da calibragem)
-
+#define resolution 8
 
 #define TOUCH_THRESHOLD 55
 
@@ -28,15 +20,6 @@ int capacitanciaMaxima = 20; //valor que nos da a certeza de toque (ache esse va
 #define R_EAR 17
 #define R_EYE 16
 #define R_MUSTACHE 5
-
-
-// void bass(uint8_t);
-// void chord1(uint8_t);
-// void chord2(uint8_t);
-// void chord3(uint8_t);
-// void deedle1(uint8_t);
-// void deedle2(uint8_t);
-// void extra(uint8_t);
 
 void setup()
 {
@@ -57,9 +40,6 @@ void setup()
 
 #define DEBOUNCE_THRESHOLD 2
 
-bool left_pressed, right_pressed, up_pressed, down_pressed, select_pressed;
-uint8_t left_count = 0, right_count = 0, up_count = 0, down_count = 0, select_count = 0;
-uint8_t left, right, up, down, select;
 
 #define LEFT 0
 #define RIGHT 1
@@ -92,7 +72,7 @@ void loop()
 
     if (pressed[n]) {
       digitalWrite(output_pins[n], HIGH);
-      chord2(CHANNEL);
+      deedle1(CHANNEL);
     } else {
       digitalWrite(output_pins[n], LOW);
     }
