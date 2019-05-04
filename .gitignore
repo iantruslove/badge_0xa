@@ -17,3 +17,7 @@ src/deedle2.cpp
 src/deedle2.h
 src/extra.cpp
 src/extra.h
+
+*.swp
+*.swo
+.DS_store
