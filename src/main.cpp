@@ -4,12 +4,61 @@ int freq = 2000;
 #define CHANNEL 0
 int resolution = 8;
   
-void setup() {
-  Serial.begin(115200);
+int pinoVermelho = 19; //pino que ligamos o LED vermelho
+int pinoVerde = 16; //pino que ligamos o LED verde
+
+int pinoTouchOn = 4; //pino com sensor touch (pode-se usar a constante nativa T0)
+int pinoTouchBlink = 6; //pino com sensor touch (pode-se usar a constante nativa T4)
+int capacitanciaMaxima = 20; //valor que nos da a certeza de toque (ache esse valor através da calibragem)
+ 
+void setup()
+{
+   Serial.begin(115200);
+   delay(1000);
+   pinMode(pinoVermelho, OUTPUT);
+   pinMode(pinoVerde, OUTPUT);
   ledcSetup(CHANNEL, freq, resolution);
   ledcAttachPin(26, CHANNEL);
+  delay(500);
 }
+
+#define TOUCH_THRESHOLD 65
+
+bool left_pressed, right_pressed, up_pressed, down_pressed, select_pressed;
+uint8_t left, right, up, down, select;
+
+void bass();
+
+void loop()
+{
+  left = touchRead(T3);
+  right = touchRead(T4);
+  up = touchRead(T6);
+  down = touchRead(T7);
+  select = touchRead(T2);
+
+  left_pressed = (left < TOUCH_THRESHOLD);
+  right_pressed = (right < TOUCH_THRESHOLD);
+  up_pressed = (up < TOUCH_THRESHOLD);
+  down_pressed = (down < TOUCH_THRESHOLD);
+  select_pressed = (select < TOUCH_THRESHOLD);
+
+  Serial.print("  left - "); Serial.print(left_pressed); Serial.print("   "); Serial.println(left);
+  Serial.print(" right - "); Serial.print(right_pressed); Serial.print("   "); Serial.println(right);  
+  Serial.print("    up - "); Serial.print(up_pressed); Serial.print("   "); Serial.println(up);
+  Serial.print("  down - "); Serial.print(down_pressed); Serial.print("   "); Serial.println(down);
+  Serial.print("select - "); Serial.print(select_pressed); Serial.print("   "); Serial.println(select);
   
+  Serial.println("");
+
+  if (left_pressed || right_pressed || up_pressed || down_pressed || select_pressed) {
+    //bass();
+  } else {
+    delay(10);
+  }
+}
+
+
 // Set this to be the pin that your buzzer resides in. (Note that you can only have one buzzer actively using the PWM signal at a time).
 
 void tone(int tonePin, int frequency, double msecs) {
@@ -1952,7 +2001,7 @@ delayMicroseconds(int(1000*2953.0625));
 ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
 }
 
-void loop() {
-    // Play midi
-    bass();
-}
+// void loop() {
+//     // Play midi
+//     bass();
+// }
