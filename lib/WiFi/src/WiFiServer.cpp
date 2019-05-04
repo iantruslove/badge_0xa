@@ -38,9 +38,9 @@ size_t WiFiServer::write(const uint8_t *data, size_t len){
 
 void WiFiServer::stopAll(){}
 
-WiFiClient WiFiServer::available(){
+WiFiClient* WiFiServer::available(){
   if(!_listening)
-    return WiFiClient();
+    return new WiFiClient();
   int client_sock;
   if (_accepted_sockfd >= 0) {
     client_sock = _accepted_sockfd;
@@ -56,10 +56,10 @@ WiFiClient WiFiServer::available(){
     if(setsockopt(client_sock, SOL_SOCKET, SO_KEEPALIVE, (char*)&val, sizeof(int)) == ESP_OK) {
       val = _noDelay;
       if(setsockopt(client_sock, IPPROTO_TCP, TCP_NODELAY, (char*)&val, sizeof(int)) == ESP_OK)
-        return WiFiClient(client_sock);
+        return new WiFiClient(client_sock);
     }
   }
-  return WiFiClient();
+  return new WiFiClient();
 }
 
 void WiFiServer::begin(uint16_t port){
@@ -119,4 +119,3 @@ void WiFiServer::close(){
 void WiFiServer::stop(){
   end();
 }
-
