@@ -35,7 +35,7 @@ class WiFiServer : public Server {
   public:
     void listenOnLocalhost(){}
 
-    WiFiServer(uint16_t port=80, uint8_t max_clients=4):sockfd(-1),_accepted_sockfd(-1),_port(port),_max_clients(max_clients),_listening(false),_noDelay(false){}
+    WiFiServer(uint16_t port=80, uint8_t max_clients=8):sockfd(-1),_accepted_sockfd(-1),_port(port),_max_clients(max_clients),_listening(false),_noDelay(false){}
     ~WiFiServer(){ end();}
     WiFiClient* available();
     WiFiClient* accept(){return available();}

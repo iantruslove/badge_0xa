@@ -2,18 +2,26 @@
 #include <WiFi.h>
 #include <SPI.h>
 
+
+#define SERVER
+//#define CLIENT
+
 // Replace with your network credentials
-const char* ssid     = "ESP32-Access-Point";
-const char* password = "123456789";
+const char* ssid     = "the_jungle";
+const char* password = "technicaltechnician";
+
+const char* host = "192.168.4.1";
 
 
-/*#include "chord1.h"
+#ifdef CLIENT
+#include "chord1.h"
 #include "chord2.h"
 #include "chord3.h"
 #include "bass.h"
 #include "deedle1.h"
 #include "deedle2.h"
-#include "extra.h"*/
+#include "extra.h"
+#endif // defined CLIENT
 
 #define freq 2000
 #define CHANNEL 0
@@ -30,23 +38,14 @@ const char* password = "123456789";
 
 
 
+#ifdef SERVER
 // Set web server port number to 80
-WiFiServer server(80);
-
-// Variable to store the HTTP request
-//String header;
-
-// Auxiliar variables to store the current output state
-//String output26State = "off";
-//String output27State = "off";
-
-// Assign output variables to GPIO pins
-//const int output26 = 26;
-//const int output27 = 27;
+WiFiServer server(80, 8);
+WiFiClient* clients[] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+#define max_num_clients 8
+#endif // defined SERVER
 
 #define DEBOUNCE_THRESHOLD 2
-
-
 #define LEFT 0
 #define RIGHT 1
 #define UP 2
@@ -55,7 +54,6 @@ WiFiServer server(80);
 #define NUM_BUTTONS 5
 
 uint8_t touchpads[] = { T3, T4, T6, T7, T2 };
-
 uint16_t touchpad_readings[] = { 0, 0, 0, 0, 0 };
 bool pressed_this_loop[] = { false, false, false, false, false };
 uint8_t debounce_count[] = { 0, 0, 0, 0, 0 };
@@ -65,16 +63,31 @@ uint8_t output_pins[] = { L_EAR, R_EAR, L_EYE, R_EYE, R_MUSTACHE, L_MUSTACHE };
 void setup() {
   Serial.begin(115200);
   
+#ifdef SERVER  
   // Connect to Wi-Fi network with SSID and password
   Serial.print("Setting AP (Access Point)…");
   // Remove the password parameter, if you want the AP (Access Point) to be open
   WiFi.softAP(ssid, password);
-
   IPAddress IP = WiFi.softAPIP();
   Serial.print("AP IP address: ");
   Serial.println(IP);
-
   server.begin();
+#endif // defined SERVER  
+
+#ifdef CLIENT
+
+    WiFi.begin(ssid, password);
+
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
+
+    Serial.println("");
+    Serial.println("WiFi connected");
+    Serial.println("IP address: ");
+    Serial.println(WiFi.localIP());
+#endif //defined CLIENT
 
   pinMode(L_EAR, OUTPUT);
   pinMode(L_EYE, OUTPUT);
@@ -87,9 +100,8 @@ void setup() {
   ledcAttachPin(26, CHANNEL);
 }
 
-WiFiClient* clients[] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-#define max_num_clients 8
 
+#ifdef SERVER
 bool add_client(WiFiClient* client) {
   for (byte i=0; i<max_num_clients; i++) {
     if (clients[i] == NULL) {
@@ -102,8 +114,7 @@ bool add_client(WiFiClient* client) {
   return false;
 }
 
-void loop(){
-
+void server_loop() {
   //Serial.print("Num client slots: "); Serial.println(max_num_clients);
 
   //  Clean out any disconnected clients
@@ -128,12 +139,7 @@ void loop(){
     }
   }
 
-
-  // If the button is pressed, send out the instruction
-
-
   for (byte n=0; n<NUM_BUTTONS; n++) {
-
     if (touchpads[n] == T3) {  // select?
       //Serial.println("Reading T2");
     } else {
@@ -157,7 +163,8 @@ void loop(){
       for (byte i=0; i<max_num_clients; i++) {
         if (clients[i]) {
           if (clients[i]->connected()) {
-            clients[i]->printf("----> client %d, button %d \n\n", i, output_pins[n]);
+            clients[i]->printf("%d\r", i);
+            Serial.printf("----> client %d, button %d \n\n", i, output_pins[n]);
           }
         }
       }
@@ -174,7 +181,7 @@ void loop(){
     if (client->connected()) {
       Serial.println("Connected!");
       add_client(client);
-      client->println("Hello!");
+      //client->println("Hello!");
     } else {
       //Serial.println("Not connected!");
     }
@@ -184,4 +191,58 @@ void loop(){
 
   delay(50);
   //Serial.println("Loop");
+}
+#endif // defined SERVER
+
+#ifdef CLIENT
+void client_loop() {
+
+  WiFiClient client;
+  const int httpPort = 80;
+  if (!client.connect(host, httpPort)) {
+      Serial.println("connection failed");
+      return;
+  } else {
+    Serial.println("connected");
+  }
+
+  unsigned long timeout = millis();
+  while (client.available() == 0) {
+      if (millis() - timeout > 25000) {
+          Serial.println(">>> Clien t Timeout !");
+          client.stop();
+          return;
+      }
+  }
+
+  // Read all the lines of the reply from server and print them to Serial
+  while(client.available()) {
+      int c = client.read();
+      Serial.println("Received:");
+      Serial.print((char)c);
+      if ((char)c == '0') {
+        bass(CHANNEL);
+      } else if ((char)c == '1') {
+        chord1(CHANNEL);
+      }else if ((char)c == '2') {
+        chord2(CHANNEL);
+      }else if ((char)c == '3') {
+        chord3(CHANNEL);
+      }else if ((char)c == '4') {
+        deedle1(CHANNEL);
+      }else if ((char)c == '5') {
+        deedle2(CHANNEL);
+      }else if ((char)c == '6') {
+        extra(CHANNEL);
+      }
+  }
+}
+#endif // defined CLIENT
+
+void loop() {
+  #ifdef SERVER
+  server_loop();
+  #else
+  client_loop();
+  #endif
 }
