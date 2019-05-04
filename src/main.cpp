@@ -62,8 +62,6 @@ uint8_t debounce_count[] = { 0, 0, 0, 0, 0 };
 bool pressed[] = { false, false, false, false, false };
 uint8_t output_pins[] = { L_EAR, R_EAR, L_EYE, R_EYE, R_MUSTACHE, L_MUSTACHE };
 
-
-
 void setup() {
   Serial.begin(115200);
   
@@ -135,6 +133,13 @@ void loop(){
 
 
   for (byte n=0; n<NUM_BUTTONS; n++) {
+
+    if (touchpads[n] == T3) {  // select?
+      //Serial.println("Reading T2");
+    } else {
+      break;
+    }
+
     touchpad_readings[n] = touchRead(touchpads[n]);
     pressed_this_loop[n] = (touchpad_readings[n] < TOUCH_THRESHOLD);
 
@@ -177,35 +182,6 @@ void loop(){
     //Serial.println("No client");
   }
 
-  delay(500);
-
-/*
-  if (client) {                             // If a new client connects,
-    Serial.println("New Client.");          // print a message out in the serial port
-    String currentLine = "";                // make a String to hold incoming data from the client
-    while (client.connected()) {            // loop while the client's connected
-      if (client.available()) {             // if there's bytes to read from the client,
-        char c = client.read();             // read a byte, then
-        Serial.write(c);                    // print it out the serial monitor
-        header += c;
-        if (c == '\n') {                    // if the byte is a newline character
-          // if the current line is blank, you got two newline characters in a row.
-          // that's the end of the client HTTP request, so send a response:
-          if (currentLine.length() == 0) {}
-          else { // if you got a newline, then clear currentLine
-            currentLine = "";
-          }
-        } else if (c != '\r') {  // if you got anything else but a carriage return character,
-          currentLine += c;      // add it to the end of the currentLine
-        }
-      }
-    }
-    // Clear the header variable
-    header = "";
-    // Close the connection
-    client.stop();
-    Serial.println("Client disconnected.");
-    Serial.println("");
-  }
-  */
+  delay(50);
+  //Serial.println("Loop");
 }
