@@ -57,7 +57,7 @@ uint16_t touchpad_readings[] = { 0, 0, 0, 0, 0 };
 bool pressed_this_loop[] = { false, false, false, false, false };
 uint8_t debounce_count[] = { 0, 0, 0, 0, 0 };
 bool pressed[] = { false, false, false, false, false };
-uint8_t output_pins[] = { L_EAR, R_EAR, R_EYE, R_MUSTACHE, L_MUSTACHE };
+uint8_t output_pins[] = { L_EAR, R_EAR, L_EYE, R_EYE, R_MUSTACHE, L_MUSTACHE };
 
 void loop()
 {
