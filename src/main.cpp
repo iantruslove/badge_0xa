@@ -3,31 +3,55 @@
 int freq = 2000;
 #define CHANNEL 0
 int resolution = 8;
-  
+
 int pinoVermelho = 19; //pino que ligamos o LED vermelho
 int pinoVerde = 16; //pino que ligamos o LED verde
 
 int pinoTouchOn = 4; //pino com sensor touch (pode-se usar a constante nativa T0)
 int pinoTouchBlink = 6; //pino com sensor touch (pode-se usar a constante nativa T4)
 int capacitanciaMaxima = 20; //valor que nos da a certeza de toque (ache esse valor através da calibragem)
- 
+
+
+#define TOUCH_THRESHOLD 55
+
+#define L_EAR 21
+#define L_EYE 19
+#define L_MUSTACHE 18
+#define R_EAR 17
+#define R_EYE 16
+#define R_MUSTACHE 5
+
+
+void bass(uint8_t);
+void chord1(uint8_t);
+void chord2(uint8_t);
+void chord3(uint8_t);
+void deedle1(uint8_t);
+void deedle2(uint8_t);
+void extra(uint8_t);
+
 void setup()
 {
-   Serial.begin(115200);
-   delay(1000);
-   pinMode(pinoVermelho, OUTPUT);
-   pinMode(pinoVerde, OUTPUT);
+  Serial.begin(115200);
+  delay(1000);
+
+  pinMode(L_EAR, OUTPUT);
+  pinMode(L_EYE, OUTPUT);
+  pinMode(L_MUSTACHE, OUTPUT);
+  pinMode(R_EAR, OUTPUT);
+  pinMode(R_EYE, OUTPUT);
+  pinMode(R_MUSTACHE, OUTPUT);
+
   ledcSetup(CHANNEL, freq, resolution);
   ledcAttachPin(26, CHANNEL);
   delay(500);
 }
 
-#define TOUCH_THRESHOLD 65
+#define DEBOUNCE_THRESHOLD 2
 
 bool left_pressed, right_pressed, up_pressed, down_pressed, select_pressed;
+uint8_t left_count = 0, right_count = 0, up_count = 0, down_count = 0, select_count = 0;
 uint8_t left, right, up, down, select;
-
-void bass();
 
 void loop()
 {
@@ -43,19 +67,87 @@ void loop()
   down_pressed = (down < TOUCH_THRESHOLD);
   select_pressed = (select < TOUCH_THRESHOLD);
 
+  if (left_pressed) {
+    left_count++;
+  } else {
+    left_count = 0;
+  }
+
+  if (right_pressed) {
+    right_count++;
+  } else {
+    right_count = 0;
+  }
+
+  if (up_pressed) {
+    up_count++;
+  } else {
+    up_count = 0;
+  }
+
+  if (down_pressed) {
+    down_count++;
+  } else {
+    down_count = 0;
+  }
+
+  if (select_pressed) {
+    select_count++;
+  } else {
+    select_count = 0;
+  }
+
+
+
+  if (left_count > DEBOUNCE_THRESHOLD) {
+    digitalWrite(L_EAR, HIGH);
+    bass(CHANNEL);
+  } else {
+    digitalWrite(L_EAR, LOW);
+  }
+
+  if (right_count > DEBOUNCE_THRESHOLD) {
+    digitalWrite(R_EAR, HIGH);
+    chord1(CHANNEL);
+  } else {
+    digitalWrite(R_EAR, LOW);
+  }
+
+  if (up_count > DEBOUNCE_THRESHOLD) {
+    digitalWrite(R_EYE, HIGH);
+    chord2(CHANNEL);
+  } else {
+    digitalWrite(R_EYE, LOW);
+  }
+
+  if (down_count > DEBOUNCE_THRESHOLD) {
+    digitalWrite(R_MUSTACHE, HIGH);
+    chord3(CHANNEL);
+  } else {
+    digitalWrite(R_MUSTACHE, LOW);
+  }
+
+  if (select_count > DEBOUNCE_THRESHOLD) {
+    digitalWrite(L_MUSTACHE, HIGH);
+    deedle1(CHANNEL);
+  } else {
+    digitalWrite(L_MUSTACHE, LOW);
+  }
+
   Serial.print("  left - "); Serial.print(left_pressed); Serial.print("   "); Serial.println(left);
-  Serial.print(" right - "); Serial.print(right_pressed); Serial.print("   "); Serial.println(right);  
+  Serial.print(" right - "); Serial.print(right_pressed); Serial.print("   "); Serial.println(right);
   Serial.print("    up - "); Serial.print(up_pressed); Serial.print("   "); Serial.println(up);
   Serial.print("  down - "); Serial.print(down_pressed); Serial.print("   "); Serial.println(down);
   Serial.print("select - "); Serial.print(select_pressed); Serial.print("   "); Serial.println(select);
-  
+
   Serial.println("");
 
   if (left_pressed || right_pressed || up_pressed || down_pressed || select_pressed) {
-    //bass();
+    Serial.println("Something's presssed");
   } else {
-    delay(10);
   }
+
+  delay(30);
 }
 
 
@@ -67,1941 +159,3704 @@ void tone(int tonePin, int frequency, double msecs) {
   ledcWriteTone(CHANNEL, 0);
 }
 
-void bass() {
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*432.3177083333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*46.557291666666664));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*199.53125));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*186.22916666666666));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*2946.411458333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*252.73958333333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*419.015625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*53.20833333333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*206.18229166666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*152.97395833333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*159.625));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*59.859375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*99.765625));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*113.06770833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*206.18229166666666));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*2939.7604166666665));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*252.73958333333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*432.3177083333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*46.557291666666664));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*186.22916666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*113.06770833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*206.18229166666666));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*2953.0625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*239.4375));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*419.015625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*59.859375));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*126.36979166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*192.88020833333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*139.671875));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*186.22916666666666));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*99.765625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*212.83333333333331));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*2953.0625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*239.4375));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*405.71354166666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*279.34375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*372.4583333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*106.41666666666666));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*226.13541666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*412.3645833333333));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*113.06770833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*525.4322916666666));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*319.25));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*159.625));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*192.88020833333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*445.61979166666663));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*379.109375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*99.765625));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*186.22916666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*452.2708333333333));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*166.27604166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*472.2239583333333));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*199.53125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*438.96875));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*372.4583333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*106.41666666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*232.78645833333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*226.13541666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*199.53125));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*226.13541666666666));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*598.59375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*39.90625));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*412.3645833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*292.6458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*385.76041666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*226.13541666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*412.3645833333333));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*558.6875));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*332.5520833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*199.53125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*438.96875));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*372.4583333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*106.41666666666666));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*59.859375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*99.765625));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*465.57291666666663));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*465.57291666666663));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*212.83333333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*425.66666666666663));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*385.76041666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*226.13541666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*226.13541666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*186.22916666666666));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*226.13541666666666));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*598.59375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*39.90625));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*412.3645833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*292.6458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*385.76041666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*226.13541666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*412.3645833333333));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*518.78125));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*325.90104166666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*152.97395833333331));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*199.53125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*438.96875));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*379.109375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*99.765625));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*166.27604166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*472.2239583333333));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*465.57291666666663));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*219.484375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*419.015625));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*372.4583333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*106.41666666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*226.13541666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*226.13541666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*186.22916666666666));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*226.13541666666666));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*598.59375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*39.90625));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*638.5));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*292.6458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*638.5));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*13.302083333333332));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*392.4114583333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*39.90625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*505.47916666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*372.4583333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*106.41666666666666));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*26.604166666666664));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*598.59375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*39.90625));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*399.0625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*166.27604166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*152.97395833333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*159.625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*159.625));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*59.859375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*99.765625));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*186.22916666666666));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*226.13541666666666));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*3192.5));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*13.302083333333332));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*332.5520833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*292.6458333333333));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*438.96875));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*199.53125));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*352.5052083333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*126.36979166666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*385.76041666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*252.73958333333331));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*325.90104166666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*152.97395833333331));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*319.25));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*13.302083333333332));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*266.04166666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*39.90625));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*292.6458333333333));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*332.5520833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*458.921875));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*179.578125));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*372.4583333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*266.04166666666663));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*332.5520833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*319.25));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*13.302083333333332));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*266.04166666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*39.90625));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*292.6458333333333));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*332.5520833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*438.96875));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*199.53125));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*372.4583333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*266.04166666666663));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*319.25));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*13.302083333333332));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*266.04166666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*39.90625));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*372.4583333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*106.41666666666666));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*352.5052083333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*285.99479166666663));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*399.0625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*239.4375));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*325.90104166666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*152.97395833333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*465.57291666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*379.109375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*99.765625));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*432.3177083333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*206.18229166666666));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*465.57291666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*319.25));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*159.625));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*465.57291666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*13.302083333333332));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*412.3645833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*139.671875));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*179.578125));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*113.06770833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*206.18229166666666));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*2953.0625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*239.4375));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*419.015625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*59.859375));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*199.53125));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*159.625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*159.625));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*113.06770833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*206.18229166666666));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*2939.7604166666665));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*252.73958333333331));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*425.66666666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*53.20833333333333));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*279.34375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*385.76041666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*219.484375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*419.015625));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*545.3854166666666));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*332.5520833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*199.53125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*438.96875));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*372.4583333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*106.41666666666666));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*465.57291666666663));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*352.5052083333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*126.36979166666666));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*166.27604166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*472.2239583333333));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*212.83333333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*425.66666666666663));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*379.109375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*99.765625));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*239.4375));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*226.13541666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*139.671875));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*179.578125));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*232.78645833333331));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*598.59375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*39.90625));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*425.66666666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*53.20833333333333));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*279.34375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*379.109375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*99.765625));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*239.4375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*405.71354166666663));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*352.5052083333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*545.3854166666666));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*319.25));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*159.625));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*192.88020833333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*445.61979166666663));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*166.27604166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*472.2239583333333));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*465.57291666666663));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*212.83333333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*425.66666666666663));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*372.4583333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*106.41666666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*239.4375));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*226.13541666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*179.578125));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*226.13541666666666));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*611.8958333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*26.604166666666664));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*638.5));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*53.20833333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*305.94791666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*638.5));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*13.302083333333332));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*392.4114583333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*39.90625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*512.1302083333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*126.36979166666666));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*26.604166666666664));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*591.9427083333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*53.20833333333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*392.4114583333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*166.27604166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*159.625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*159.625));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*39.90625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*186.22916666666666));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*226.13541666666666));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*3192.5));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*13.302083333333332));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*292.6458333333333));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*452.2708333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*186.22916666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*352.5052083333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*126.36979166666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*385.76041666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*252.73958333333331));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*332.5520833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*319.25));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*13.302083333333332));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*266.04166666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*39.90625));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*352.5052083333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*126.36979166666666));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*292.6458333333333));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*332.5520833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*452.2708333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*186.22916666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*352.5052083333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*126.36979166666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*379.109375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*259.390625));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*332.5520833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*319.25));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*13.302083333333332));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*266.04166666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*39.90625));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*292.6458333333333));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*452.2708333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*186.22916666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*352.5052083333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*126.36979166666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*379.109375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*259.390625));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*319.25));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*13.302083333333332));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*266.04166666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*39.90625));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*372.4583333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*106.41666666666666));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*292.6458333333333));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*399.0625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*239.4375));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*332.5520833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*465.57291666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*379.109375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*99.765625));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*438.96875));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*199.53125));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*478.875));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*159.625));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*332.5520833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*106.41666666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*53.20833333333333));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*465.57291666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*19.953125));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*412.3645833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*59.859375));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*113.06770833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*206.18229166666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*199.53125));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*2946.411458333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*246.08854166666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*419.015625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*59.859375));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*159.625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*159.625));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*159.625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*159.625));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*199.53125));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*2939.7604166666665));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*252.73958333333331));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*425.66666666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*53.20833333333333));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*292.6458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*372.4583333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*106.41666666666666));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*226.13541666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*412.3645833333333));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*352.5052083333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*126.36979166666666));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*113.06770833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*525.4322916666666));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*332.5520833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*199.53125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*438.96875));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*379.109375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*99.765625));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*465.57291666666663));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*465.57291666666663));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*212.83333333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*425.66666666666663));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*385.76041666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*239.4375));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*232.78645833333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*186.22916666666666));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*239.4375));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*598.59375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*39.90625));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*638.5));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*292.6458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 77.78174593052023);
-delayMicroseconds(int(1000*638.5));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*13.302083333333332));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*399.0625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*26.604166666666664));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*512.1302083333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*126.36979166666666));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*39.90625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*585.2916666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*53.20833333333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*385.76041666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*159.625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*159.625));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*39.90625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*199.53125));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*106.41666666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*212.83333333333331));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*3192.5));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*26.604166666666664));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*319.25));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*332.5520833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*305.94791666666663));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*452.2708333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*186.22916666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*352.5052083333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*126.36979166666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*385.76041666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*252.73958333333331));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*319.25));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*13.302083333333332));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*266.04166666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*39.90625));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*339.203125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*299.296875));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*332.5520833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*438.96875));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*199.53125));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*339.203125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*139.671875));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*385.76041666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*252.73958333333331));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*319.25));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*19.953125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*259.390625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*46.557291666666664));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*352.5052083333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*352.5052083333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*285.99479166666663));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*332.5520833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*465.57291666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*339.203125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*139.671875));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*379.109375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*259.390625));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*332.5520833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*319.25));
-ledcWriteTone(CHANNEL, 61.7354126570155);
-delayMicroseconds(int(1000*19.953125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*259.390625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*46.557291666666664));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*379.109375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*359.15625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*279.34375));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 73.41619197935188);
-delayMicroseconds(int(1000*399.0625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*239.4375));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*325.90104166666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*152.97395833333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*465.57291666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*372.4583333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*106.41666666666666));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*438.96875));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*199.53125));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*345.85416666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 82.4068892282175);
-delayMicroseconds(int(1000*465.57291666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*332.5520833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*73.16145833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*86.46354166666666));
-ledcWriteTone(CHANNEL, 46.2493028389543);
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*465.57291666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*13.302083333333332));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*412.3645833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*79.8125));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*186.22916666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*66.51041666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*186.22916666666666));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*2939.7604166666665));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*259.390625));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*419.015625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*53.20833333333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*126.36979166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*192.88020833333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*59.859375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*99.765625));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*139.671875));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*179.578125));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*186.22916666666666));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*2939.7604166666665));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*252.73958333333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*425.66666666666663));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*53.20833333333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*133.02083333333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*186.22916666666666));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*59.859375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*99.765625));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*172.92708333333331));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*113.06770833333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*206.18229166666666));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*2939.7604166666665));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*252.73958333333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*432.3177083333333));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*46.557291666666664));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*126.36979166666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*192.88020833333331));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*146.32291666666666));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*179.578125));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*59.859375));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*93.11458333333333));
-ledcWriteTone(CHANNEL, 55.0);
-delayMicroseconds(int(1000*152.97395833333331));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*166.27604166666666));
-ledcWriteTone(CHANNEL, 51.91308719749314);
-delayMicroseconds(int(1000*119.71875));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
-delayMicroseconds(int(1000*199.53125));
-ledcWriteTone(CHANNEL, 69.29565774421802);
-delayMicroseconds(int(1000*2953.0625));
-ledcWriteTone(CHANNEL, 0); /* NOTE OFF */
+
+
+
+
+
+/////////////////////
+
+void bass(uint8_t channel) {
+    delayMicroseconds(0);
+ledcWriteTone(channel, 55);
+delayMicroseconds(0);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 55);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 0);
+delayMicroseconds(199531);
+ledcWriteTone(channel, 55);
+delayMicroseconds(199531);
+ledcWriteTone(channel, 0);
+delayMicroseconds(172927);
+ledcWriteTone(channel, 55);
+delayMicroseconds(172927);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 55);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(172927);
+ledcWriteTone(channel, 51);
+delayMicroseconds(172927);
+ledcWriteTone(channel, 0);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 69);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 0);
+delayMicroseconds(252739);
+ledcWriteTone(channel, 55);
+delayMicroseconds(252739);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 55);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 0);
+delayMicroseconds(206182);
+ledcWriteTone(channel, 55);
+delayMicroseconds(206182);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 55);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 55);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(172927);
+ledcWriteTone(channel, 51);
+delayMicroseconds(172927);
+ledcWriteTone(channel, 0);
+delayMicroseconds(206182);
+ledcWriteTone(channel, 69);
+delayMicroseconds(206182);
+ledcWriteTone(channel, 0);
+delayMicroseconds(252739);
+ledcWriteTone(channel, 55);
+delayMicroseconds(252739);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 55);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 0);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 55);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 0);
+delayMicroseconds(172927);
+ledcWriteTone(channel, 55);
+delayMicroseconds(172927);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 55);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(172927);
+ledcWriteTone(channel, 51);
+delayMicroseconds(172927);
+ledcWriteTone(channel, 0);
+delayMicroseconds(206182);
+ledcWriteTone(channel, 69);
+delayMicroseconds(206182);
+ledcWriteTone(channel, 0);
+delayMicroseconds(239437);
+ledcWriteTone(channel, 55);
+delayMicroseconds(239437);
+ledcWriteTone(channel, 0);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 55);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 0);
+delayMicroseconds(192880);
+ledcWriteTone(channel, 55);
+delayMicroseconds(192880);
+ledcWriteTone(channel, 0);
+delayMicroseconds(172927);
+ledcWriteTone(channel, 55);
+delayMicroseconds(172927);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 55);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 51);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 0);
+delayMicroseconds(212833);
+ledcWriteTone(channel, 69);
+delayMicroseconds(212833);
+ledcWriteTone(channel, 0);
+delayMicroseconds(239437);
+ledcWriteTone(channel, 61);
+delayMicroseconds(239437);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 61);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 61);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(359156);
+ledcWriteTone(channel, 77);
+delayMicroseconds(359156);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 77);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 77);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(412364);
+ledcWriteTone(channel, 51);
+delayMicroseconds(412364);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 51);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 51);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(525432);
+ledcWriteTone(channel, 46);
+delayMicroseconds(525432);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 46);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 46);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(445619);
+ledcWriteTone(channel, 82);
+delayMicroseconds(445619);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 82);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 82);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(452270);
+ledcWriteTone(channel, 46);
+delayMicroseconds(452270);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 46);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 46);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(472223);
+ledcWriteTone(channel, 51);
+delayMicroseconds(472223);
+ledcWriteTone(channel, 0);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 51);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 51);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(438968);
+ledcWriteTone(channel, 55);
+delayMicroseconds(438968);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 55);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 55);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 55);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 55);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(199531);
+ledcWriteTone(channel, 51);
+delayMicroseconds(199531);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 69);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 61);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 61);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 61);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(345854);
+ledcWriteTone(channel, 77);
+delayMicroseconds(345854);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 77);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 77);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(412364);
+ledcWriteTone(channel, 51);
+delayMicroseconds(412364);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 51);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 51);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(558687);
+ledcWriteTone(channel, 46);
+delayMicroseconds(558687);
+ledcWriteTone(channel, 0);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 46);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 46);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(438968);
+ledcWriteTone(channel, 82);
+delayMicroseconds(438968);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 82);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 82);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(465572);
+ledcWriteTone(channel, 46);
+delayMicroseconds(465572);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 46);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 46);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(465572);
+ledcWriteTone(channel, 51);
+delayMicroseconds(465572);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 51);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 51);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(425666);
+ledcWriteTone(channel, 55);
+delayMicroseconds(425666);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 55);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 55);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 55);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 55);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 51);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 69);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 61);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 61);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 61);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(345854);
+ledcWriteTone(channel, 77);
+delayMicroseconds(345854);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 77);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 77);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(412364);
+ledcWriteTone(channel, 51);
+delayMicroseconds(412364);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 51);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 51);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(518781);
+ledcWriteTone(channel, 46);
+delayMicroseconds(518781);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 46);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 46);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(438968);
+ledcWriteTone(channel, 82);
+delayMicroseconds(438968);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 82);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 82);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(472223);
+ledcWriteTone(channel, 46);
+delayMicroseconds(472223);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 46);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 46);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(465572);
+ledcWriteTone(channel, 51);
+delayMicroseconds(465572);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 51);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 51);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(419015);
+ledcWriteTone(channel, 55);
+delayMicroseconds(419015);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 55);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 55);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 55);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 55);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 51);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 69);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 61);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 61);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 61);
+delayMicroseconds(638500);
+ledcWriteTone(channel, 77);
+delayMicroseconds(638500);
+ledcWriteTone(channel, 0);
+delayMicroseconds(638500);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 77);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 77);
+delayMicroseconds(638500);
+ledcWriteTone(channel, 51);
+delayMicroseconds(638500);
+ledcWriteTone(channel, 0);
+delayMicroseconds(638500);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 51);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 51);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 51);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 51);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 51);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 55);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 55);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 55);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 55);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 55);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 51);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 69);
+delayMicroseconds(3192500);
+ledcWriteTone(channel, 46);
+delayMicroseconds(3192500);
+ledcWriteTone(channel, 0);
+delayMicroseconds(3192500);
+ledcWriteTone(channel, 0);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 46);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 46);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(292645);
+ledcWriteTone(channel, 73);
+delayMicroseconds(292645);
+ledcWriteTone(channel, 0);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 73);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 73);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(199531);
+ledcWriteTone(channel, 55);
+delayMicroseconds(199531);
+ledcWriteTone(channel, 0);
+delayMicroseconds(126369);
+ledcWriteTone(channel, 55);
+delayMicroseconds(126369);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 55);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(252739);
+ledcWriteTone(channel, 82);
+delayMicroseconds(252739);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 82);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 82);
+delayMicroseconds(319250);
+ledcWriteTone(channel, 61);
+delayMicroseconds(319250);
+ledcWriteTone(channel, 0);
+delayMicroseconds(319250);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 46);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 46);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 46);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(292645);
+ledcWriteTone(channel, 73);
+delayMicroseconds(292645);
+ledcWriteTone(channel, 0);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 73);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 73);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(179578);
+ledcWriteTone(channel, 55);
+delayMicroseconds(179578);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 55);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 55);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(266041);
+ledcWriteTone(channel, 82);
+delayMicroseconds(266041);
+ledcWriteTone(channel, 0);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 82);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 82);
+delayMicroseconds(319250);
+ledcWriteTone(channel, 61);
+delayMicroseconds(319250);
+ledcWriteTone(channel, 0);
+delayMicroseconds(319250);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 46);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 46);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 46);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(292645);
+ledcWriteTone(channel, 73);
+delayMicroseconds(292645);
+ledcWriteTone(channel, 0);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 73);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 73);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(199531);
+ledcWriteTone(channel, 55);
+delayMicroseconds(199531);
+ledcWriteTone(channel, 0);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 55);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 55);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(266041);
+ledcWriteTone(channel, 82);
+delayMicroseconds(266041);
+ledcWriteTone(channel, 0);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 82);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 82);
+delayMicroseconds(319250);
+ledcWriteTone(channel, 61);
+delayMicroseconds(319250);
+ledcWriteTone(channel, 0);
+delayMicroseconds(319250);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 46);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 46);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 46);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(285994);
+ledcWriteTone(channel, 73);
+delayMicroseconds(285994);
+ledcWriteTone(channel, 0);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 73);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 73);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(239437);
+ledcWriteTone(channel, 55);
+delayMicroseconds(239437);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 55);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 55);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(172927);
+ledcWriteTone(channel, 69);
+delayMicroseconds(172927);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 69);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 69);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(206182);
+ledcWriteTone(channel, 82);
+delayMicroseconds(206182);
+ledcWriteTone(channel, 0);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 82);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 82);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(172927);
+ledcWriteTone(channel, 46);
+delayMicroseconds(172927);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 46);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 46);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 51);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 55);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 55);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(179578);
+ledcWriteTone(channel, 55);
+delayMicroseconds(179578);
+ledcWriteTone(channel, 0);
+delayMicroseconds(172927);
+ledcWriteTone(channel, 55);
+delayMicroseconds(172927);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 55);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(172927);
+ledcWriteTone(channel, 51);
+delayMicroseconds(172927);
+ledcWriteTone(channel, 0);
+delayMicroseconds(206182);
+ledcWriteTone(channel, 69);
+delayMicroseconds(206182);
+ledcWriteTone(channel, 0);
+delayMicroseconds(239437);
+ledcWriteTone(channel, 55);
+delayMicroseconds(239437);
+ledcWriteTone(channel, 0);
 }
 
-// void loop() {
-//     // Play midi
-//     bass();
-// }
+
+void chord1(uint8_t channel) {
+delayMicroseconds(0);
+ledcWriteTone(channel, 277);
+delayMicroseconds(0);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 277);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(212833);
+ledcWriteTone(channel, 277);
+delayMicroseconds(212833);
+ledcWriteTone(channel, 0);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 277);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 0);
+delayMicroseconds(113067);
+ledcWriteTone(channel, 277);
+delayMicroseconds(113067);
+ledcWriteTone(channel, 0);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 246);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 329);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 277);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 277);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(199531);
+ledcWriteTone(channel, 277);
+delayMicroseconds(199531);
+ledcWriteTone(channel, 0);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 277);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 0);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 277);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 246);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(219484);
+ledcWriteTone(channel, 329);
+delayMicroseconds(219484);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 277);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 277);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(212833);
+ledcWriteTone(channel, 277);
+delayMicroseconds(212833);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 277);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(113067);
+ledcWriteTone(channel, 277);
+delayMicroseconds(113067);
+ledcWriteTone(channel, 0);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 246);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 329);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 277);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 277);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(219484);
+ledcWriteTone(channel, 277);
+delayMicroseconds(219484);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 277);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 277);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 246);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(239437);
+ledcWriteTone(channel, 329);
+delayMicroseconds(239437);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 311);
+delayMicroseconds(1270348);
+ledcWriteTone(channel, 277);
+delayMicroseconds(1270348);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1270348);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 311);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 277);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1436625);
+ledcWriteTone(channel, 311);
+delayMicroseconds(1436625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 277);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 277);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(192880);
+ledcWriteTone(channel, 277);
+delayMicroseconds(192880);
+ledcWriteTone(channel, 0);
+delayMicroseconds(206182);
+ledcWriteTone(channel, 277);
+delayMicroseconds(206182);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 277);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 246);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 0);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 329);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 311);
+delayMicroseconds(1270348);
+ledcWriteTone(channel, 277);
+delayMicroseconds(1270348);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1270348);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 311);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(113067);
+ledcWriteTone(channel, 277);
+delayMicroseconds(113067);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 246);
+delayMicroseconds(1283651);
+ledcWriteTone(channel, 311);
+delayMicroseconds(1283651);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1283651);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 277);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 277);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(179578);
+ledcWriteTone(channel, 277);
+delayMicroseconds(179578);
+ledcWriteTone(channel, 0);
+delayMicroseconds(192880);
+ledcWriteTone(channel, 277);
+delayMicroseconds(192880);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 277);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 246);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 329);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 311);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 277);
+delayMicroseconds(1257046);
+ledcWriteTone(channel, 311);
+delayMicroseconds(1257046);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1257046);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 277);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 246);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 311);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 277);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 277);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(192880);
+ledcWriteTone(channel, 277);
+delayMicroseconds(192880);
+ledcWriteTone(channel, 0);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 277);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 277);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 246);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 0);
+delayMicroseconds(219484);
+ledcWriteTone(channel, 329);
+delayMicroseconds(219484);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 311);
+delayMicroseconds(1263697);
+ledcWriteTone(channel, 277);
+delayMicroseconds(1263697);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1243744);
+ledcWriteTone(channel, 311);
+delayMicroseconds(1243744);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1243744);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 277);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 277);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(219484);
+ledcWriteTone(channel, 277);
+delayMicroseconds(219484);
+ledcWriteTone(channel, 0);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 277);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 277);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 246);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 0);
+delayMicroseconds(252739);
+ledcWriteTone(channel, 329);
+delayMicroseconds(252739);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 440);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 415);
+delayMicroseconds(458921);
+ledcWriteTone(channel, 440);
+delayMicroseconds(458921);
+ledcWriteTone(channel, 0);
+delayMicroseconds(458921);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 415);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 440);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 415);
+delayMicroseconds(458921);
+ledcWriteTone(channel, 440);
+delayMicroseconds(458921);
+ledcWriteTone(channel, 0);
+delayMicroseconds(458921);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 415);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 440);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 415);
+delayMicroseconds(458921);
+ledcWriteTone(channel, 440);
+delayMicroseconds(458921);
+ledcWriteTone(channel, 0);
+delayMicroseconds(458921);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 415);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 440);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 415);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 246);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 220);
+delayMicroseconds(0);
+ledcWriteTone(channel, 246);
+delayMicroseconds(0);
+ledcWriteTone(channel, 0);
+delayMicroseconds(778171);
+ledcWriteTone(channel, 329);
+delayMicroseconds(778171);
+ledcWriteTone(channel, 0);
+delayMicroseconds(778171);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 277);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 277);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(212833);
+ledcWriteTone(channel, 277);
+delayMicroseconds(212833);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 277);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(113067);
+ledcWriteTone(channel, 277);
+delayMicroseconds(113067);
+ledcWriteTone(channel, 0);
+delayMicroseconds(498828);
+ledcWriteTone(channel, 329);
+delayMicroseconds(498828);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 277);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+}
+
+
+void chord2(uint8_t channel) {
+    delayMicroseconds(0);
+ledcWriteTone(channel, 220);
+delayMicroseconds(0);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 220);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(212833);
+ledcWriteTone(channel, 220);
+delayMicroseconds(212833);
+ledcWriteTone(channel, 0);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 220);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 220);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(512130);
+ledcWriteTone(channel, 277);
+delayMicroseconds(512130);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 220);
+delayMicroseconds(0);
+ledcWriteTone(channel, 277);
+delayMicroseconds(0);
+ledcWriteTone(channel, 0);
+delayMicroseconds(0);
+ledcWriteTone(channel, 0);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 220);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 0);
+delayMicroseconds(199531);
+ledcWriteTone(channel, 220);
+delayMicroseconds(199531);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 220);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 220);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(492177);
+ledcWriteTone(channel, 277);
+delayMicroseconds(492177);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 220);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 220);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 0);
+delayMicroseconds(199531);
+ledcWriteTone(channel, 220);
+delayMicroseconds(199531);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 220);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 220);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(492177);
+ledcWriteTone(channel, 277);
+delayMicroseconds(492177);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 220);
+delayMicroseconds(0);
+ledcWriteTone(channel, 277);
+delayMicroseconds(0);
+ledcWriteTone(channel, 0);
+delayMicroseconds(0);
+ledcWriteTone(channel, 0);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 220);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 0);
+delayMicroseconds(206182);
+ledcWriteTone(channel, 220);
+delayMicroseconds(206182);
+ledcWriteTone(channel, 0);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 220);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 220);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(492177);
+ledcWriteTone(channel, 277);
+delayMicroseconds(492177);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 246);
+delayMicroseconds(1277000);
+ledcWriteTone(channel, 233);
+delayMicroseconds(1277000);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1270348);
+ledcWriteTone(channel, 246);
+delayMicroseconds(1270348);
+ledcWriteTone(channel, 0);
+delayMicroseconds(2494140);
+ledcWriteTone(channel, 220);
+delayMicroseconds(2494140);
+ledcWriteTone(channel, 0);
+delayMicroseconds(2494140);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 207);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 246);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 220);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 220);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 220);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 0);
+delayMicroseconds(206182);
+ledcWriteTone(channel, 220);
+delayMicroseconds(206182);
+ledcWriteTone(channel, 0);
+delayMicroseconds(113067);
+ledcWriteTone(channel, 220);
+delayMicroseconds(113067);
+ledcWriteTone(channel, 0);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 207);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 0);
+delayMicroseconds(252739);
+ledcWriteTone(channel, 277);
+delayMicroseconds(252739);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 246);
+delayMicroseconds(1270348);
+ledcWriteTone(channel, 277);
+delayMicroseconds(1270348);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1270348);
+ledcWriteTone(channel, 0);
+delayMicroseconds(0);
+ledcWriteTone(channel, 277);
+delayMicroseconds(1283651);
+ledcWriteTone(channel, 246);
+delayMicroseconds(1283651);
+ledcWriteTone(channel, 0);
+delayMicroseconds(2540697);
+ledcWriteTone(channel, 220);
+delayMicroseconds(2540697);
+ledcWriteTone(channel, 0);
+delayMicroseconds(2540697);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 207);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1283651);
+ledcWriteTone(channel, 220);
+delayMicroseconds(1283651);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 220);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 220);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 0);
+delayMicroseconds(199531);
+ledcWriteTone(channel, 220);
+delayMicroseconds(199531);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 220);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(179578);
+ledcWriteTone(channel, 207);
+delayMicroseconds(179578);
+ledcWriteTone(channel, 0);
+delayMicroseconds(252739);
+ledcWriteTone(channel, 277);
+delayMicroseconds(252739);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 246);
+delayMicroseconds(1270348);
+ledcWriteTone(channel, 233);
+delayMicroseconds(1270348);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1277000);
+ledcWriteTone(channel, 246);
+delayMicroseconds(1277000);
+ledcWriteTone(channel, 0);
+delayMicroseconds(2494140);
+ledcWriteTone(channel, 220);
+delayMicroseconds(2494140);
+ledcWriteTone(channel, 0);
+delayMicroseconds(2494140);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 207);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1296953);
+ledcWriteTone(channel, 220);
+delayMicroseconds(1296953);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 220);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 220);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 0);
+delayMicroseconds(206182);
+ledcWriteTone(channel, 220);
+delayMicroseconds(206182);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 220);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 207);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 0);
+delayMicroseconds(252739);
+ledcWriteTone(channel, 277);
+delayMicroseconds(252739);
+ledcWriteTone(channel, 0);
+delayMicroseconds(33255);
+ledcWriteTone(channel, 246);
+delayMicroseconds(1263697);
+ledcWriteTone(channel, 233);
+delayMicroseconds(1263697);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1210489);
+ledcWriteTone(channel, 246);
+delayMicroseconds(1210489);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1210489);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 220);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 220);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(219484);
+ledcWriteTone(channel, 220);
+delayMicroseconds(219484);
+ledcWriteTone(channel, 0);
+delayMicroseconds(192880);
+ledcWriteTone(channel, 220);
+delayMicroseconds(192880);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 220);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(192880);
+ledcWriteTone(channel, 207);
+delayMicroseconds(192880);
+ledcWriteTone(channel, 0);
+delayMicroseconds(266041);
+ledcWriteTone(channel, 277);
+delayMicroseconds(266041);
+ledcWriteTone(channel, 0);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 369);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 329);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 369);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 329);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 369);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 329);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 369);
+delayMicroseconds(2534046);
+ledcWriteTone(channel, 329);
+delayMicroseconds(2534046);
+ledcWriteTone(channel, 0);
+delayMicroseconds(2534046);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 207);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 220);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(0);
+ledcWriteTone(channel, 220);
+delayMicroseconds(771520);
+ledcWriteTone(channel, 246);
+delayMicroseconds(771520);
+ledcWriteTone(channel, 0);
+delayMicroseconds(771520);
+ledcWriteTone(channel, 0);
+delayMicroseconds(325901);
+ledcWriteTone(channel, 277);
+delayMicroseconds(325901);
+ledcWriteTone(channel, 0);
+}
+
+
+void chord3(uint8_t channel) {
+    delayMicroseconds(0);
+ledcWriteTone(channel, 164);
+delayMicroseconds(0);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 164);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 164);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 164);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 164);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(212833);
+ledcWriteTone(channel, 207);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 155);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 0);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 0);
+delayMicroseconds(212833);
+ledcWriteTone(channel, 207);
+delayMicroseconds(212833);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 164);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 164);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(212833);
+ledcWriteTone(channel, 164);
+delayMicroseconds(212833);
+ledcWriteTone(channel, 0);
+delayMicroseconds(239437);
+ledcWriteTone(channel, 164);
+delayMicroseconds(239437);
+ledcWriteTone(channel, 0);
+delayMicroseconds(113067);
+ledcWriteTone(channel, 164);
+delayMicroseconds(113067);
+ledcWriteTone(channel, 0);
+delayMicroseconds(212833);
+ledcWriteTone(channel, 155);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 207);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 0);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 0);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 207);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 0);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 164);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 164);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 164);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 164);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(113067);
+ledcWriteTone(channel, 164);
+delayMicroseconds(113067);
+ledcWriteTone(channel, 0);
+delayMicroseconds(206182);
+ledcWriteTone(channel, 155);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 207);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 0);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 0);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 207);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 164);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 164);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 164);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 164);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 0);
+delayMicroseconds(113067);
+ledcWriteTone(channel, 164);
+delayMicroseconds(113067);
+ledcWriteTone(channel, 0);
+delayMicroseconds(206182);
+ledcWriteTone(channel, 155);
+delayMicroseconds(0);
+ledcWriteTone(channel, 207);
+delayMicroseconds(0);
+ledcWriteTone(channel, 0);
+delayMicroseconds(0);
+ledcWriteTone(channel, 0);
+delayMicroseconds(252739);
+ledcWriteTone(channel, 207);
+delayMicroseconds(252739);
+ledcWriteTone(channel, 0);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 184);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 0);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 207);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 0);
+delayMicroseconds(126369);
+ledcWriteTone(channel, 164);
+delayMicroseconds(126369);
+ledcWriteTone(channel, 0);
+delayMicroseconds(239437);
+ledcWriteTone(channel, 184);
+delayMicroseconds(239437);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 164);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 164);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(219484);
+ledcWriteTone(channel, 164);
+delayMicroseconds(219484);
+ledcWriteTone(channel, 0);
+delayMicroseconds(212833);
+ledcWriteTone(channel, 164);
+delayMicroseconds(212833);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 164);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(192880);
+ledcWriteTone(channel, 155);
+delayMicroseconds(192880);
+ledcWriteTone(channel, 0);
+delayMicroseconds(246088);
+ledcWriteTone(channel, 207);
+delayMicroseconds(246088);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 184);
+delayMicroseconds(1283651);
+ledcWriteTone(channel, 233);
+delayMicroseconds(1283651);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 207);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 164);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 0);
+delayMicroseconds(239437);
+ledcWriteTone(channel, 184);
+delayMicroseconds(239437);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 164);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 164);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(199531);
+ledcWriteTone(channel, 164);
+delayMicroseconds(199531);
+ledcWriteTone(channel, 0);
+delayMicroseconds(212833);
+ledcWriteTone(channel, 164);
+delayMicroseconds(212833);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 164);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(192880);
+ledcWriteTone(channel, 155);
+delayMicroseconds(192880);
+ledcWriteTone(channel, 0);
+delayMicroseconds(239437);
+ledcWriteTone(channel, 207);
+delayMicroseconds(239437);
+ledcWriteTone(channel, 0);
+delayMicroseconds(33255);
+ledcWriteTone(channel, 184);
+delayMicroseconds(1296953);
+ledcWriteTone(channel, 277);
+delayMicroseconds(1296953);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1296953);
+ledcWriteTone(channel, 0);
+delayMicroseconds(139671);
+ledcWriteTone(channel, 207);
+delayMicroseconds(139671);
+ledcWriteTone(channel, 0);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 164);
+delayMicroseconds(0);
+ledcWriteTone(channel, 277);
+delayMicroseconds(0);
+ledcWriteTone(channel, 0);
+delayMicroseconds(0);
+ledcWriteTone(channel, 0);
+delayMicroseconds(246088);
+ledcWriteTone(channel, 184);
+delayMicroseconds(246088);
+ledcWriteTone(channel, 0);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 164);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 164);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 164);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 0);
+delayMicroseconds(219484);
+ledcWriteTone(channel, 164);
+delayMicroseconds(219484);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 164);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 155);
+delayMicroseconds(186229);
+ledcWriteTone(channel, 0);
+delayMicroseconds(239437);
+ledcWriteTone(channel, 207);
+delayMicroseconds(239437);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 184);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 207);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 164);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 164);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(239437);
+ledcWriteTone(channel, 164);
+delayMicroseconds(239437);
+ledcWriteTone(channel, 0);
+delayMicroseconds(179578);
+ledcWriteTone(channel, 164);
+delayMicroseconds(179578);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 164);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(219484);
+ledcWriteTone(channel, 155);
+delayMicroseconds(219484);
+ledcWriteTone(channel, 0);
+delayMicroseconds(279343);
+ledcWriteTone(channel, 207);
+delayMicroseconds(279343);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 277);
+delayMicroseconds(1257046);
+ledcWriteTone(channel, 293);
+delayMicroseconds(1257046);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1257046);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 277);
+delayMicroseconds(1277000);
+ledcWriteTone(channel, 246);
+delayMicroseconds(1277000);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1277000);
+ledcWriteTone(channel, 0);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 277);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 0);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 293);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 0);
+delayMicroseconds(33255);
+ledcWriteTone(channel, 277);
+delayMicroseconds(1283651);
+ledcWriteTone(channel, 246);
+delayMicroseconds(1283651);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1283651);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 277);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 0);
+delayMicroseconds(0);
+ledcWriteTone(channel, 293);
+delayMicroseconds(0);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 277);
+delayMicroseconds(1263697);
+ledcWriteTone(channel, 246);
+delayMicroseconds(1263697);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1263697);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 277);
+delayMicroseconds(1250395);
+ledcWriteTone(channel, 293);
+delayMicroseconds(1250395);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1223791);
+ledcWriteTone(channel, 277);
+delayMicroseconds(1223791);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1223791);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 164);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(0);
+ledcWriteTone(channel, 184);
+delayMicroseconds(0);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 207);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 220);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 220);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 0);
+delayMicroseconds(206182);
+ledcWriteTone(channel, 220);
+delayMicroseconds(206182);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 220);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 220);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(179578);
+ledcWriteTone(channel, 246);
+delayMicroseconds(179578);
+ledcWriteTone(channel, 0);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 207);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 220);
+delayMicroseconds(0);
+ledcWriteTone(channel, 277);
+delayMicroseconds(0);
+ledcWriteTone(channel, 0);
+delayMicroseconds(0);
+ledcWriteTone(channel, 0);
+}
+
+
+void deedle1(uint8_t channel) {
+delayMicroseconds(2208145);
+ledcWriteTone(channel, 739);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 659);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 554);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 659);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 0);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 0);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 739);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 659);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 554);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 659);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(0);
+ledcWriteTone(channel, 739);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 659);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 554);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 493);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 554);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 493);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 554);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 739);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 659);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(2381072);
+ledcWriteTone(channel, 739);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 659);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 554);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 659);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 739);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 659);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 554);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 659);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 739);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 659);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 554);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 493);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 554);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 493);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 554);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 739);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 659);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(2394375);
+ledcWriteTone(channel, 739);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 659);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 554);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 659);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 739);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 659);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 554);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 659);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 0);
+delayMicroseconds(0);
+ledcWriteTone(channel, 739);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 659);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 554);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 493);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 554);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 493);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 554);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 739);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 659);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(2387723);
+ledcWriteTone(channel, 739);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 659);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 554);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 659);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 739);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 0);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 659);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 0);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 554);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 659);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 739);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 659);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 554);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 493);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 554);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 493);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 554);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 739);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 659);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(33374927);
+ledcWriteTone(channel, 493);
+delayMicroseconds(33374927);
+ledcWriteTone(channel, 0);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 493);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 0);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 554);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 622);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 0);
+delayMicroseconds(172927);
+ledcWriteTone(channel, 622);
+delayMicroseconds(172927);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 554);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 554);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 493);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 554);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 0);
+delayMicroseconds(10608411);
+ledcWriteTone(channel, 277);
+delayMicroseconds(10608411);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 277);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 277);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 277);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 277);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 293);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 293);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 293);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 293);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 277);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 277);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 277);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 246);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 246);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(558687);
+ledcWriteTone(channel, 277);
+delayMicroseconds(558687);
+ledcWriteTone(channel, 0);
+delayMicroseconds(219484);
+ledcWriteTone(channel, 277);
+delayMicroseconds(219484);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 277);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 277);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 293);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 293);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 293);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 277);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 277);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 277);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 246);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 246);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(631848);
+ledcWriteTone(channel, 277);
+delayMicroseconds(631848);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 277);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 277);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 277);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 277);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 293);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 293);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 293);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 293);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(126369);
+ledcWriteTone(channel, 277);
+delayMicroseconds(126369);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 277);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 277);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 246);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 246);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 220);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 246);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 207);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 246);
+delayMicroseconds(731614);
+ledcWriteTone(channel, 277);
+delayMicroseconds(731614);
+ledcWriteTone(channel, 0);
+delayMicroseconds(731614);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 246);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 0);
+delayMicroseconds(0);
+ledcWriteTone(channel, 246);
+delayMicroseconds(0);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 220);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(2753531);
+ledcWriteTone(channel, 739);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 659);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 554);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 659);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 739);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 659);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 554);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 659);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 739);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 659);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 554);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 493);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 554);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 493);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 554);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 739);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 659);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+}
+
+
+void deedle2(uint8_t channel) {
+delayMicroseconds(2208145);
+ledcWriteTone(channel, 554);
+delayMicroseconds(2208145);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 493);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 415);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 493);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 554);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 493);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 415);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 493);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 554);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 493);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 415);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 369);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 415);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 369);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 415);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 554);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 493);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 0);
+delayMicroseconds(2314562);
+ledcWriteTone(channel, 554);
+delayMicroseconds(2314562);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 493);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 415);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 493);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(0);
+ledcWriteTone(channel, 554);
+delayMicroseconds(0);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 493);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 0);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 415);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 493);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 554);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 493);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 415);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 369);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 415);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 0);
+delayMicroseconds(33255);
+ledcWriteTone(channel, 369);
+delayMicroseconds(33255);
+ledcWriteTone(channel, 0);
+delayMicroseconds(0);
+ledcWriteTone(channel, 415);
+delayMicroseconds(0);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 554);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 493);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(2334515);
+ledcWriteTone(channel, 554);
+delayMicroseconds(2334515);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 493);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 415);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 493);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 554);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 493);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 415);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 493);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 554);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 493);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 415);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 369);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 0);
+delayMicroseconds(0);
+ledcWriteTone(channel, 415);
+delayMicroseconds(0);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 369);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 415);
+delayMicroseconds(166276);
+ledcWriteTone(channel, 0);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 554);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 0);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 0);
+delayMicroseconds(33255);
+ledcWriteTone(channel, 493);
+delayMicroseconds(33255);
+ledcWriteTone(channel, 0);
+delayMicroseconds(2321213);
+ledcWriteTone(channel, 554);
+delayMicroseconds(2321213);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 493);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 415);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 493);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 0);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 554);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 0);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 493);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 415);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 493);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 554);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 493);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 0);
+delayMicroseconds(33255);
+ledcWriteTone(channel, 415);
+delayMicroseconds(33255);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 369);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 415);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(33255);
+ledcWriteTone(channel, 369);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 415);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 554);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 493);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 369);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 369);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 369);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 369);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 369);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 369);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(126369);
+ledcWriteTone(channel, 415);
+delayMicroseconds(126369);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 466);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 493);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(399062);
+ledcWriteTone(channel, 311);
+delayMicroseconds(399062);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 311);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 329);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 369);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 369);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 329);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 329);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 311);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 277);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 277);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 246);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 311);
+delayMicroseconds(784822);
+ledcWriteTone(channel, 277);
+delayMicroseconds(784822);
+ledcWriteTone(channel, 0);
+delayMicroseconds(784822);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 246);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 277);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1503135);
+ledcWriteTone(channel, 369);
+delayMicroseconds(1503135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 369);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 369);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 369);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 369);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 369);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 415);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 466);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 493);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(419015);
+ledcWriteTone(channel, 311);
+delayMicroseconds(419015);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 311);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(0);
+ledcWriteTone(channel, 329);
+delayMicroseconds(345854);
+ledcWriteTone(channel, 369);
+delayMicroseconds(345854);
+ledcWriteTone(channel, 0);
+delayMicroseconds(345854);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 369);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 329);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 329);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 311);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 277);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 277);
+delayMicroseconds(345854);
+ledcWriteTone(channel, 246);
+delayMicroseconds(345854);
+ledcWriteTone(channel, 0);
+delayMicroseconds(345854);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 311);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 0);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 277);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 246);
+delayMicroseconds(359156);
+ledcWriteTone(channel, 277);
+delayMicroseconds(359156);
+ledcWriteTone(channel, 0);
+delayMicroseconds(359156);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1343510);
+ledcWriteTone(channel, 369);
+delayMicroseconds(1343510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 369);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 369);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 369);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 369);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 415);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 466);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 493);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(452270);
+ledcWriteTone(channel, 311);
+delayMicroseconds(452270);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 311);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 311);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 329);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 369);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 369);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 329);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(139671);
+ledcWriteTone(channel, 329);
+delayMicroseconds(139671);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 311);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 277);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 277);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 246);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 311);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 277);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 246);
+delayMicroseconds(312598);
+ledcWriteTone(channel, 277);
+delayMicroseconds(312598);
+ledcWriteTone(channel, 0);
+delayMicroseconds(312598);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1456578);
+ledcWriteTone(channel, 369);
+delayMicroseconds(1456578);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 369);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 369);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 369);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 369);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 415);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 466);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 493);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(478875);
+ledcWriteTone(channel, 622);
+delayMicroseconds(478875);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 622);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 659);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 739);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 739);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(33255);
+ledcWriteTone(channel, 659);
+delayMicroseconds(33255);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 659);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 622);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 659);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1117375);
+ledcWriteTone(channel, 880);
+delayMicroseconds(1117375);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 880);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 880);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 880);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 880);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 880);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 880);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 880);
+delayMicroseconds(944447);
+ledcWriteTone(channel, 830);
+delayMicroseconds(944447);
+ledcWriteTone(channel, 0);
+delayMicroseconds(944447);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 830);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(565338);
+ledcWriteTone(channel, 880);
+delayMicroseconds(565338);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 880);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 880);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 880);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 880);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 880);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 880);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 880);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 880);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 880);
+delayMicroseconds(106416);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 880);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 880);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 830);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 830);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(731614);
+ledcWriteTone(channel, 880);
+delayMicroseconds(731614);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 880);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 880);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 880);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 880);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 880);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 880);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 830);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 830);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(345854);
+ledcWriteTone(channel, 880);
+delayMicroseconds(345854);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 880);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 880);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 880);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 880);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 880);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 880);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 880);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 880);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 880);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 880);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 880);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 830);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 830);
+delayMicroseconds(79812);
+ledcWriteTone(channel, 0);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 739);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 659);
+delayMicroseconds(319250);
+ledcWriteTone(channel, 830);
+delayMicroseconds(319250);
+ledcWriteTone(channel, 0);
+delayMicroseconds(319250);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 880);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 830);
+delayMicroseconds(332552);
+ledcWriteTone(channel, 739);
+delayMicroseconds(332552);
+ledcWriteTone(channel, 0);
+delayMicroseconds(332552);
+ledcWriteTone(channel, 0);
+delayMicroseconds(2833343);
+ledcWriteTone(channel, 554);
+delayMicroseconds(2833343);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 493);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 415);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 493);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 554);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 493);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 415);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 493);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 554);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 493);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 415);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 369);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 415);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 369);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 415);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(159625);
+ledcWriteTone(channel, 0);
+delayMicroseconds(33255);
+ledcWriteTone(channel, 554);
+delayMicroseconds(33255);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 493);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 0);
+}
+
+
+void extra(uint8_t channel) {
+    delayMicroseconds(0);
+ledcWriteTone(channel, 220);
+delayMicroseconds(0);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 220);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(259390);
+ledcWriteTone(channel, 220);
+delayMicroseconds(259390);
+ledcWriteTone(channel, 0);
+delayMicroseconds(266041);
+ledcWriteTone(channel, 220);
+delayMicroseconds(266041);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 220);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 207);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 277);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 220);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 0);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 220);
+delayMicroseconds(119718);
+ledcWriteTone(channel, 0);
+delayMicroseconds(259390);
+ledcWriteTone(channel, 220);
+delayMicroseconds(259390);
+ledcWriteTone(channel, 0);
+delayMicroseconds(252739);
+ledcWriteTone(channel, 220);
+delayMicroseconds(252739);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 220);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 207);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 277);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 220);
+delayMicroseconds(59859);
+ledcWriteTone(channel, 0);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 220);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 0);
+delayMicroseconds(259390);
+ledcWriteTone(channel, 220);
+delayMicroseconds(259390);
+ledcWriteTone(channel, 0);
+delayMicroseconds(259390);
+ledcWriteTone(channel, 220);
+delayMicroseconds(259390);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 220);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 207);
+delayMicroseconds(226135);
+ledcWriteTone(channel, 0);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 277);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 0);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 220);
+delayMicroseconds(39906);
+ledcWriteTone(channel, 0);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 220);
+delayMicroseconds(133020);
+ledcWriteTone(channel, 0);
+delayMicroseconds(259390);
+ledcWriteTone(channel, 220);
+delayMicroseconds(259390);
+ledcWriteTone(channel, 0);
+delayMicroseconds(259390);
+ledcWriteTone(channel, 220);
+delayMicroseconds(259390);
+ledcWriteTone(channel, 0);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 220);
+delayMicroseconds(93114);
+ledcWriteTone(channel, 0);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 207);
+delayMicroseconds(232786);
+ledcWriteTone(channel, 0);
+delayMicroseconds(252739);
+ledcWriteTone(channel, 277);
+delayMicroseconds(252739);
+ledcWriteTone(channel, 0);
+delayMicroseconds(33268510);
+ledcWriteTone(channel, 622);
+delayMicroseconds(33268510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 622);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 659);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 739);
+delayMicroseconds(53208);
+ledcWriteTone(channel, 0);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 739);
+delayMicroseconds(152973);
+ledcWriteTone(channel, 0);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 659);
+delayMicroseconds(99765);
+ledcWriteTone(channel, 0);
+delayMicroseconds(33255);
+ledcWriteTone(channel, 659);
+delayMicroseconds(33255);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 622);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 659);
+delayMicroseconds(46557);
+ledcWriteTone(channel, 0);
+delayMicroseconds(5174510);
+ledcWriteTone(channel, 184);
+delayMicroseconds(5174510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 146);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 220);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 164);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 184);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 0);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 146);
+delayMicroseconds(19953);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 220);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 164);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 0);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 184);
+delayMicroseconds(6651);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 146);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 220);
+delayMicroseconds(1263697);
+ledcWriteTone(channel, 164);
+delayMicroseconds(1263697);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1263697);
+ledcWriteTone(channel, 0);
+delayMicroseconds(13302);
+ledcWriteTone(channel, 184);
+delayMicroseconds(1257046);
+ledcWriteTone(channel, 146);
+delayMicroseconds(1257046);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1257046);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 220);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 0);
+delayMicroseconds(0);
+ledcWriteTone(channel, 277);
+delayMicroseconds(1270348);
+ledcWriteTone(channel, 164);
+delayMicroseconds(1270348);
+ledcWriteTone(channel, 0);
+delayMicroseconds(1270348);
+ledcWriteTone(channel, 0);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 184);
+delayMicroseconds(26604);
+ledcWriteTone(channel, 0);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 184);
+delayMicroseconds(86463);
+ledcWriteTone(channel, 0);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 184);
+delayMicroseconds(73161);
+ledcWriteTone(channel, 0);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 207);
+delayMicroseconds(66510);
+ledcWriteTone(channel, 0);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 220);
+delayMicroseconds(146322);
+ledcWriteTone(channel, 0);
+}
