@@ -1,5 +1,13 @@
 #include <Arduino.h>
 
+#include "chord1.h"
+#include "chord2.h"
+#include "chord3.h"
+#include "bass.h"
+#include "deedle1.h"
+#include "deedle2.h"
+#include "extra.h"
+
 int freq = 2000;
 #define CHANNEL 0
 int resolution = 8;
@@ -22,13 +30,13 @@ int capacitanciaMaxima = 20; //valor que nos da a certeza de toque (ache esse va
 #define R_MUSTACHE 5
 
 
-void bass(uint8_t);
-void chord1(uint8_t);
-void chord2(uint8_t);
-void chord3(uint8_t);
-void deedle1(uint8_t);
-void deedle2(uint8_t);
-void extra(uint8_t);
+// void bass(uint8_t);
+// void chord1(uint8_t);
+// void chord2(uint8_t);
+// void chord3(uint8_t);
+// void deedle1(uint8_t);
+// void deedle2(uint8_t);
+// void extra(uint8_t);
 
 void setup()
 {
@@ -66,7 +74,6 @@ uint16_t touchpad_readings[] = { 0, 0, 0, 0, 0 };
 bool pressed_this_loop[] = { false, false, false, false, false };
 uint8_t debounce_count[] = { 0, 0, 0, 0, 0 };
 bool pressed[] = { false, false, false, false, false };
-
 uint8_t output_pins[] = { L_EAR, R_EAR, R_EYE, R_MUSTACHE, L_MUSTACHE };
 
 void loop()
@@ -85,6 +92,7 @@ void loop()
 
     if (pressed[n]) {
       digitalWrite(output_pins[n], HIGH);
+      chord2(CHANNEL);
     } else {
       digitalWrite(output_pins[n], LOW);
     }
@@ -92,3 +100,4 @@ void loop()
 
   delay(30);
 }
+
